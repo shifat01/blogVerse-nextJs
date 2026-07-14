@@ -1,6 +1,6 @@
 import React from 'react'
 
-const SubsTableItem = ({email, mongoId, date}) => {
+const SubsTableItem = ({email, mongoId, deleteEmail, date}) => {
     const emailDate = new Date(date);
   return (
     <tr className='bg-white border-b text-left'>
@@ -9,7 +9,7 @@ const SubsTableItem = ({email, mongoId, date}) => {
         </th>
         <td className='px-6 py-4'>{emailDate.toDateString()}</td>
         <td className='px-6 py-4'>
-            <button className='bg-red-500 text-white p-2 rounded-2xl cursor-pointer'>Delete</button>
+            <button onClick={()=>deleteEmail(mongoId)} className='bg-red-500 text-white p-2 rounded-2xl cursor-pointer'>Delete</button>
         </td>
  
     </tr>
