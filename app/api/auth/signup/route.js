@@ -11,7 +11,7 @@ export async function POST(request){
         const {name, email, password} = await request.json();
 
         // validate input
-        if(!name?.trim() || !email?.trime() || !password){
+        if(!name?.trim() || !email?.trim() || !password){
             return NextResponse.json(
                 {success: false, masseage: "All feilds are required"},
                 {status: 400}

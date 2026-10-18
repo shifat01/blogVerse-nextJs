@@ -6,13 +6,13 @@ import { createToken } from "@/lib/auth";
 
 export async function POST(request){
     try{
-        ConnectDB();
+        await ConnectDB();
 
         const {email, password} = await request.json();
 
         if(!email?.trim() || !password){
             return NextResponse.json(
-                {success: false, masseage: "Email and password are required"},
+                {success: false, message: "Email and password are required"},
                 {status: 400}
             );
         }
@@ -61,7 +61,9 @@ export async function POST(request){
             sameSite: 'lax',
             path: '/',
             maxAge: 60 * 60 * 24
-        })
+        });
+
+        return response;
 
     } catch(error){
         console.error("Login error:", error);
