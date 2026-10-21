@@ -4,8 +4,9 @@ import {writeFile} from 'fs/promises'
 import BlogModel from "@/lib/models/BlogModel";
 import { getCurrentUser } from "@/lib/auth";
 import userModel from "@/lib/models/userModel";
-
-const fs = require('fs');
+import mongoose from "mongoose";
+import path from "path";
+import { unlink } from "fs/promises";
 
 // const LoadDB = async () => {
 //     await ConnectDB();
@@ -16,6 +17,8 @@ const fs = require('fs');
 
 // API Endpoint to get all blogs
 export async function GET(request){
+
+    await ConnectDB();
 
     const blogId = request.nextUrl.searchParams.get("id");
     if (blogId) {
@@ -104,6 +107,7 @@ export async function POST(request){
         description,
         category: category.trim(),
         author: currentUser.name,
+        authorId: currentUser._id,
         image: imgUrl,
         authorImage: typeof authorImg === "string"? authorImg: ""
     }
@@ -132,9 +136,77 @@ export async function POST(request){
 // Creating API Endmoint to delete Blog
 
 export async function DELETE(request){
-    const id = await request.nextUrl.searchParams.get('id');
-    const blog = await BlogModel.findById(id);
-    fs.unlink(`./public${blog.image}`, ()=>{}); // deleting from public folder
-    await BlogModel.findByIdAndDelete(id);
-    return NextResponse.json({msg:"Blog Deleted"})
+    try{
+        const payload = await getCurrentUser();
+        
+        if(!payload?.userId){
+            return NextResponse.json(
+                { success: false, message: "Please Login first" },
+                { status: 401 }
+            );
+        }
+
+        await ConnectDB();
+
+        const currentUser = await userModel.findById(payload.userId).select("-password");
+
+        if(!currentUser){
+            return NextResponse.json(
+                { success: false, message: "User not found" },
+                { status: 401 }
+            );
+        }
+
+        const id = request.nextUrl.searchParams.get("id");
+
+        if(!id || !mongoose.isValidObjectId(id)){
+            return NextResponse.json(
+                { success: false, message: "Invalid blog ID" },
+                { status: 400 }
+            );
+        }
+
+        const blog = await BlogModel.findById(id);
+
+        if(!blog){
+            return NextResponse.json(
+                { success: false, message: "Blog not found" },
+                { status: 404 }
+            );
+        }
+
+        if(!blog.authorId || blog.authorId.toString() !== currentUser._id.toString()){
+            return NextResponse.json(
+                { success: false, message: "You cannot delete this blog" },
+                { status: 403 }
+            );
+        }
+
+        await BlogModel.findByIdAndDelete(id);
+
+        if(blog.image){
+            const imagePath = path.join(
+                process.cwd(), "public", path.basename(blog.image)
+            );
+
+            try{
+                await unlink(imagePath);
+            } catch(error){
+                if(error.code !== "ENOENT"){
+                    console.error("Image deletion error: ", error);
+                }
+            }
+        }
+
+        return NextResponse.json(
+            {success: true, message: "Blog Deleted"}
+        );
+    } catch(error){
+        console.error("Delete blog error:", error);
+
+        return NextResponse.json(
+            { success: false, message: "Failed to delete blog" },
+            { status: 500 }
+        );
+    }
 }
