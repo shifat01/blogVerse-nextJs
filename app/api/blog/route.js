@@ -2,14 +2,16 @@ import { ConnectDB } from "@/lib/config/db";
 import { NextResponse } from "next/server";
 import {writeFile} from 'fs/promises'
 import BlogModel from "@/lib/models/BlogModel";
+import { getCurrentUser } from "@/lib/auth";
+import userModel from "@/lib/models/userModel";
 
 const fs = require('fs');
 
-const LoadDB = async () => {
-    await ConnectDB();
-}
+// const LoadDB = async () => {
+//     await ConnectDB();
+// }
 
-LoadDB();
+// LoadDB();
 
 
 // API Endpoint to get all blogs
@@ -32,29 +34,98 @@ export async function GET(request){
 
 // API Endpoint For Uploading Blogs
 export async function POST(request){
-    const formData = await request.formData();
-    const timestamp = Date.now();
 
-    const image = formData.get('image');
+    try{
+        const payload = await getCurrentUser();
+
+    if(!payload?.userId){
+        return NextResponse.json(
+            {success: false, message: "Please Login first"},
+            {status: 401}
+        );
+    }
+
+    await ConnectDB();
+
+    const currentUser = await userModel.findById(payload.userId).select("-password");
+
+    if(!currentUser){
+        return NextResponse.json(
+            {success: false, message: "User not found"},
+            {status: 401}
+        );
+    }
+
+    if(currentUser.role !== "author"){
+        return NextResponse.json(
+            {success: false, message: "Only authors can create blogs"},
+            {status: 403}
+        );
+    }
+
+
+    const formData = await request.formData();
+    
+    const title = formData.get("title");
+    const description = formData.get("description");
+    const category = formData.get("category");
+    const image = formData.get("image");
+    const authorImg = formData.get("authorImage");
+
+    if(
+        typeof title !== "string" ||
+        !title.trim() ||
+        typeof description !== "string" ||
+        !description.trim() ||
+        typeof category !== "string" ||
+        !category.trim() ||
+        !(image instanceof File) ||
+        image.size === 0
+    ){
+        return NextResponse.json(
+            {success: false, message: "Please provide valid blog information and image"},
+            {status: 400}
+        );
+    }
+
+    const timestamp = Date.now();
+    const imageName = `${timestamp}_${image.name}`;
+    const path = `/public/${imageName}`;
+
     const imageByteData = await image.arrayBuffer();
     const buffer = Buffer.from(imageByteData);
-    const path = `./public/${timestamp}_${image.name}`;
+
     await writeFile(path, buffer);
-    const imgUrl = `/${timestamp}_${image.name}`;
-    
+
+    const imgUrl = `/${imageName}`;
+
     const blogData = {
-        title:`${formData.get('title')}`,
-        description:`${formData.get('description')}`,
-        category:`${formData.get('category')}`,
-        author:`${formData.get('author')}`,
-        image:`${imgUrl}`,
-        authorImg:`${formData.get('authorImg')}`
+        title: title.trim(),
+        description,
+        category: category.trim(),
+        author: currentUser.name,
+        image: imgUrl,
+        authorImage: typeof authorImg === "string"? authorImg: ""
     }
 
     await BlogModel.create(blogData);
-    console.log("Blog Saved ✅")
 
-    return NextResponse.json({success:true, msg:"Blog Added"});
+    return NextResponse.json(
+        {success: true, message: "Blog Added"},
+    );
+
+
+    } catch(error){
+        console.error("Create blog error:", error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                msg: "Failed to create blog",
+            },
+            { status: 500 }
+        );
+    }
 }
 
 
