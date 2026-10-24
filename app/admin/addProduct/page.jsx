@@ -23,24 +23,41 @@ const Page = () => {
     console.log(data);
   }
 
+  
   const onSubmitHander = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('title', data.title);
-    formData.append('description', data.description);
-    formData.append('category', data.category);
-    formData.append('author', data.author);
-    formData.append('authorImg', data.authorImg);
-    formData.append('image', image);
+      e.preventDefault();
 
-    const response = await axios.post('/api/blog', formData);
-    if (response.data.success) {
-      toast.success(response.data.msg)
-    }
-    else{
-      toast.error("Error")
-    }
-  }
+      try {
+          const formData = new FormData();
+
+          formData.append('title', data.title);
+          formData.append('description', data.description);
+          formData.append('category', data.category);
+          formData.append('authorImg', data.authorImg);
+          formData.append('image', image);
+
+          const response = await axios.post('/api/blog', formData);
+
+          if (response.data.success) {
+              toast.success(response.data.message);
+              
+              setData({
+                  title: "",
+                  description: "",
+                  category: "Startup",
+                  author: "Shifat",
+                  authorImg: "/author_img.png"
+              });
+
+              setImage(false);
+          }
+
+      } catch (error) {
+          toast.error(
+              error.response?.data?.message || "Failed to create blog"
+          );
+      }
+  };
 
   return (
     <>

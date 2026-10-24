@@ -73,7 +73,7 @@ export async function POST(request){
     const description = formData.get("description");
     const category = formData.get("category");
     const image = formData.get("image");
-    const authorImg = formData.get("authorImage");
+    const authorImg = formData.get("authorImg");
 
     if(
         typeof title !== "string" ||
@@ -93,12 +93,17 @@ export async function POST(request){
 
     const timestamp = Date.now();
     const imageName = `${timestamp}_${image.name}`;
-    const path = `/public/${imageName}`;
+
+    const imagePath = path.join(
+        process.cwd(),
+        "public",
+        imageName
+    );
 
     const imageByteData = await image.arrayBuffer();
     const buffer = Buffer.from(imageByteData);
 
-    await writeFile(path, buffer);
+    await writeFile(imagePath, buffer);
 
     const imgUrl = `/${imageName}`;
 
@@ -109,7 +114,7 @@ export async function POST(request){
         author: currentUser.name,
         authorId: currentUser._id,
         image: imgUrl,
-        authorImage: typeof authorImg === "string"? authorImg: ""
+        authorImg: typeof authorImg === "string"? authorImg: ""
     }
 
     await BlogModel.create(blogData);

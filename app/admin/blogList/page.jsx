@@ -9,18 +9,32 @@ const Page = () => {
   const [blogs, setblogs] = useState([]);
 
   const fetchBlogs = async () => {
-    const response = await axios.get('/api/blog');
-    setblogs(response.data.blogs);
+    try {
+        const response = await axios.get('/api/blog');
+        setblogs(response.data.blogs);
+    } catch (error) {
+        toast.error(
+            error.response?.data?.message || "Failed to fetch blogs"
+        );
+    }
   }
 
   const deleteBlog = async (mongoId) => {
-    const response = await axios.delete('/api/blog',{
-      params:{
-        id:mongoId
-      }
-    })
-    toast.success(response.data.msg);
-    fetchBlogs();
+    try {
+        const response = await axios.delete('/api/blog', {
+            params: {
+                id: mongoId
+            }
+        });
+
+        toast.success(response.data.message);
+        await fetchBlogs();
+
+    } catch (error) {
+        toast.error(
+            error.response?.data?.message || "Failed to delete blog"
+        );
+    }
   }
 
   useEffect(() => {
@@ -51,7 +65,7 @@ const Page = () => {
 
           <tbody>
             {blogs.map((item,index) => {
-              return  <BlogTableItems key={index} mongoId={item._id} title={item.title} author={item.author} authorImg={item.authorImg} date={item.date} deleteBlog={deleteBlog}/>
+              return  <BlogTableItems key={item._id} mongoId={item._id} title={item.title} author={item.author} authorImg={item.authorImg} date={item.date} deleteBlog={deleteBlog}/>
             })}
             
           </tbody>
