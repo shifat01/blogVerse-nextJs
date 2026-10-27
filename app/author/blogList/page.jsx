@@ -8,9 +8,9 @@ const Page = () => {
 
   const [blogs, setblogs] = useState([]);
 
-  const fetchBlogs = async () => {
+  const fetchAuthorBlogs = async () => {
     try {
-        const response = await axios.get('/api/blog');
+        const response = await axios.get('/api/author/blogs');
         setblogs(response.data.blogs);
     } catch (error) {
         toast.error(
@@ -28,7 +28,7 @@ const Page = () => {
         });
 
         toast.success(response.data.message);
-        await fetchBlogs();
+        await fetchAuthorBlogs();
 
     } catch (error) {
         toast.error(
@@ -38,12 +38,12 @@ const Page = () => {
   }
 
   useEffect(() => {
-    fetchBlogs();
+    fetchAuthorBlogs();
   }, [])
 
   return (
     <div className='flex-1 pt-5 px-5 sm:pt-12 sm:pl-16'>
-      <h1>All blogs</h1>
+      <h1>My blogs</h1>
       <div className='relative h-[80vh] max-w-212.5 overflow-x-auto mt-4 border border-green-400 scrollbar-hide'>
         <table className='w-full text-sm text-gray-500'>
           <thead className='text-sm text  text-left uppercase bg-gray-50'>

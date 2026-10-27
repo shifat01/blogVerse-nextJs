@@ -11,7 +11,7 @@ export default function Layout({children}){
                 <Sidebar/>
                 <div className="flex flex-col w-full">
                     <div className="flex items-center justify-between w-full py-3 max-h-12 px-12 border border-b border-black">
-                        <h3 className="font-medium">Admin Panel</h3>
+                        <h3 className="font-medium">Author Dashboard</h3>
                         <Image className="rounded-full" src={assets.profile_icon} width={40} alt=""/>
                     </div>
                     {children}

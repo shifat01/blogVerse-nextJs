@@ -88,7 +88,7 @@ const EditBlog = () => {
 
             if (response.data.success) {
                 toast.success(response.data.message || 'Blog Updated')
-                router.push('/admin/blogList')
+                router.push('/author/blogList')
             } else {
                 toast.error(
                     response.data.message || 'Failed to update blog'
@@ -146,7 +146,7 @@ const EditBlog = () => {
 
                     <button
                         type='button'
-                        onClick={() => router.push('/admin/blogList')}
+                        onClick={() => router.push('/author/blogList')}
                         className='inline-flex w-fit items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-gray-300 hover:bg-gray-100'
                     >
                         <span aria-hidden='true'>←</span>
@@ -377,7 +377,7 @@ const EditBlog = () => {
                             <div className='flex flex-col-reverse gap-3 sm:flex-row'>
                                 <button
                                     type='button'
-                                    onClick={() => router.push('/admin/blogList')}
+                                    onClick={() => router.push('/author/blogList')}
                                     disabled={saving}
                                     className='rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50'
                                 >

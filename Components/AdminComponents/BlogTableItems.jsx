@@ -42,7 +42,7 @@ const BlogTableItems = ({
             <td className='px-6 py-4'>
                 <div className='flex items-center gap-2'>
                     <Link
-                        href={`/admin/editBlog/${mongoId}`}
+                        href={`/author/editBlog/${mongoId}`}
                         className='bg-blue-500 text-white p-2 rounded-2xl cursor-pointer'
                     >
                         Edit

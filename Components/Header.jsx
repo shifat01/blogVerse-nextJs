@@ -8,13 +8,15 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const Header = () => {
+const Header = ({search, setSearch}) => {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const [isAuthor, setisAuthor] = useState(false);
 
   // verify user logged in
   useEffect(() => {
@@ -23,6 +25,10 @@ const Header = () => {
         const response = await axios.get("/api/auth/me");
 
         setUser(response.data.user);
+
+        if(response.data.user.role == "author"){
+          setisAuthor(true);
+        }
       } catch (error) {
         setUser(null);
       } finally {
@@ -87,6 +93,20 @@ const Header = () => {
           />
         </Link>
 
+        <div className="flex items-center border border-gray-300 rounded-full px-4 py-2">
+            <input
+                type="text"
+                placeholder="Search blogs..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full outline-none bg-transparent"
+            />
+
+            <button type="button" aria-label="Search">
+                <span>⌕</span>
+            </button>
+        </div>
+
         {/* Authentication buttons */}
         <div className="flex items-center gap-3">
           {checkingAuth ? (
@@ -96,11 +116,19 @@ const Header = () => {
               <span className="hidden sm:inline text-sm font-medium">
                 Hi, {user.name}
               </span>
+              
+              {isAuthor && (
+                <Link href="/author/addProduct">
+                  <p className="flex items-center cursor-pointer gap-2 font-medium py-2 px-3 sm:py-3 sm:px-6 border border-solid border-black shadow-[-7px_7px_0px_#000000]">
+                    Author Dashboard
+                  </p>
+                </Link>
+              )}
 
               <button
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="flex items-center gap-2 font-medium py-2 px-3 sm:py-3 sm:px-6 border border-solid border-black shadow-[-7px_7px_0px_#000000] disabled:opacity-50"
+                className="flex items-center cursor-pointer gap-2 font-medium py-2 px-3 sm:py-3 sm:px-6 border border-solid border-black shadow-[-7px_7px_0px_#000000] disabled:opacity-50"
               >
                 {loggingOut ? "Logging out..." : "Logout"}
               </button>
@@ -134,8 +162,7 @@ const Header = () => {
 
         <p className="mt-10 max-w-185 m-auto text-xs sm:text-base">
           Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          Consectetur nobis magnam minus eius sapiente, repellat
-          rerum in id aliquid repellendus?
+          Consectetur nobis magnam minus eius sapiente
         </p>
 
         {/* Subscribe by Email */}
