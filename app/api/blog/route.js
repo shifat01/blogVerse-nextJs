@@ -215,3 +215,109 @@ export async function DELETE(request){
         );
     }
 }
+
+
+// edit blog
+export async function PUT(request){
+    try{
+        const payload = await getCurrentUser();
+
+        if(!payload?.userId){
+            return NextResponse.json(
+                {success: false, message: "Please log in first"},
+                {status: 401}
+            );
+        }
+
+        await ConnectDB();
+
+        const currentUser = await userModel.findById(payload.userId).select("-password");
+
+        if(!currentUser){
+            return NextResponse.json(
+                {success: false, message: "User not found"},
+                {status: 400}
+            );
+        }
+
+        const id = request.nextUrl.searchParams.get("id");
+
+        if(!id || !mongoose.isValidObjectId(id)){
+            return NextResponse.json(
+                {success: false, message: "Invalid blog id"},
+                {status: 400}
+            );
+        }
+
+        const blog = await BlogModel.findById(id);
+
+        if(!blog){
+            return NextResponse.json(
+                {success: false, message: "Blog not found"},
+                {status: 404}
+            );
+        }
+
+        if(!blog.authorId || blog.authorId.toString() !== currentUser._id.toString()){
+            return NextResponse.json(
+                {success: false, message: "You cannot edit this blog"},
+                {status: 403}
+            );
+        }
+
+        const formData = await request.formData();
+
+        const title = formData.get("title");
+        const description = formData.get("description");
+        const category = formData.get("category");
+        const image = formData.get("image");
+
+        if( typeof title !== "string" ||
+            !title.trim() ||
+            typeof description !== "string" ||
+            !description.trim() ||
+            typeof category !== "string" ||
+            !category.trim()
+        ){
+            return NextResponse.json(
+                {success: false, message: "Invalid blog information"},
+                {status: 400}
+            );
+        }
+
+        const updateData = {
+            title: title.trim(),
+            description: description,
+            category: category.trim()
+        }
+
+        if(image instanceof File && image.size > 0){
+            const imageName = `${Date.now()}_${image.name}`
+            const imagePath = path.join(
+                process.cwd(),
+                "public",
+                imageName
+            );
+
+            const buffer = Buffer.from(await image.arrayBuffer());
+
+            await writeFile(imagePath, buffer);
+            
+            updateData.image = `/${imageName}`;
+        }
+
+        await BlogModel.findByIdAndUpdate(id, updateData, { runValidators: true});
+
+        return NextResponse.json(
+            {success: true, message: "Blog updated"}
+        );
+
+    } catch(error){
+        console.error("Update blog error: ", error);
+        
+        return NextResponse.json(
+            {success: false, message: "Failed to update blog"},
+            {status: 500}
+        );
+    }
+}

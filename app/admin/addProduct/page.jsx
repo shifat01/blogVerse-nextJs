@@ -5,6 +5,8 @@ import Image from 'next/image'
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
 
+import RichTextEditor from '@/Components/RichTextEditor'
+
 const Page = () => {
 
   const [image, setImage] = useState(false);
@@ -17,10 +19,12 @@ const Page = () => {
   })
 
   const onChangeHandler = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setData(data=>({...data,[name]:value}));
-    console.log(data);
+    const { name, value } = event.target
+
+        setData((previousData) => ({
+            ...previousData,
+            [name]: value
+        }))
   }
 
   
@@ -70,7 +74,15 @@ const Page = () => {
           <p className='text-xl mt-4 '>Blog title</p>
           <input name='title' onChange={onChangeHandler} value={data.title} className='w-full sm:w-125 mt-4 px-4 py-3 border' type="text" placeholder='Type here' required />
           <p className='text-xl mt-4 '>Blog Description</p>
-          <textarea name='description' onChange={onChangeHandler} value={data.description} className='w-full sm:w-125 mt-4 px-4 py-3 border' type="text" placeholder='write content here' required />
+          <RichTextEditor
+              value={data.description}
+              onChange={(html) =>
+                  setData((previousData) => ({
+                      ...previousData,
+                      description: html
+                  }))
+              }
+          />
           <p className='text-xl mt-4'>Blog category</p>
           <select name="category" onChange={onChangeHandler} value={data.category} className='w-40 mt-4 px-4 py-3 border text-gray-500'>
             <option value="Startup">Startup</option>
