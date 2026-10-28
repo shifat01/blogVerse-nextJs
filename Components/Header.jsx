@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
+import {UserRound} from "lucide-react"
 
 const Header = ({search, setSearch}) => {
   const router = useRouter();
@@ -132,6 +133,15 @@ const Header = ({search, setSearch}) => {
               >
                 {loggingOut ? "Logging out..." : "Logout"}
               </button>
+
+              <Link
+                  href="/profile"
+                  aria-label="Go to profile"
+                  title="Profile"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition hover:bg-gray-100"
+              >
+                  <UserRound size={22} />
+              </Link>
             </>
           ) : (
             <>
